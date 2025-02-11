@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "560696576076",
+    "project_id": "medapp-a65c6",
+    "storage_bucket": "medapp-a65c6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560696576076:android:3b1b71a7ebd00b9fdc0ce9",
+        "android_client_info": {
+          "package_name": "com.example.medapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRWCLEiwrDnUcN_vRTjHeBLFe-iOXtCsY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

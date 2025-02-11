@@ -1,0 +1,62 @@
+name: medapp
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  firebase_auth: ^5.3.4
+  firebase_core: ^3.10.1
+  provider: ^6.1.2
+  image_picker: ^0.8.5+3  # Added image_picker package
+  file_picker: ^5.0.1 
+  cloud_firestore: ^5.6.0    # Added file_picker package
+  http: ^0.13.3
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+video_player: ^2.3.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/logo.png
+    - assets/icons/logos.jpg
+    - assets/icons/splash_ilustration.png
+    - assets/icons/img_antibiotics.png
+    - assets/icons/img_antiseptics.png
+    - assets/icons/img_cough_flu.png
+    - assets/icons/img_fever.png
+    - assets/icons/img_vitamins.png
+    - assets/icons/img_digestive.png
+    - assets/icons/img_skin.png
+    - assets/icons/img_covid.png
+    - assets/icons/amoxsan.jpg
+    - assets/icons/zitrolin.jpg
+    - assets/icons/savlon.jpg
+    - assets/icons/dettol.jpg
+    - assets/icons/amoxsan_syrup.jpg
+    - assets/icons/amoxicillin.jpg
+    - assets/icons/panadol.jpg
+    - assets/icons/bisolvon.jpg
+    - assets/icons/paracetamol.jpg
+    - assets/icons/prescription.png
+    - assets/icons/777.png
+    - assets/icons/aflu.png
+    - assets/icons/a3.png
+    - assets/icons/a3syrup.png
+    - assets/icons/img1.png
+    - assets/icons/img33.jpg
+    - assets/icons/no_history_ilustration.png
+    - assets/icons/img4.png
+    - assets/icons/images.jpg
+    - assets/icons/i2.jpg
+    - assets/icons/background.mp4
+    - assets/icons/order_success_ilustration.png
