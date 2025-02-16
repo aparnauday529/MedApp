@@ -1,61 +1,85 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // Replace with your actual HomePage import
-import 'admindashboard.dart'; // Admin Dashboard import
-import 'register.dart'; // RegisterPage import
+import 'home_page.dart'; // User's home page
+import 'admindashboard.dart'; // Admin dashboard page
+import 'register.dart'; // Register page
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Login user with Firebase
+  bool isLoading = false;
+
+  // Function to log in the user
   Future<void> loginUser(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = true;
+      });
+
       try {
-        // Perform Firebase login
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        // Sign in the user with Firebase Authentication
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        // Get the logged-in user data
         User? user = userCredential.user;
 
         if (user != null) {
-          // Retrieve the user's role from Firestore (assuming user details are in the 'users' collection)
-          DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+          // Fetch the user role from Firestore
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
 
-          // Check the role field from the user document
-          String role = userDoc['role'] ?? 'user'; // Default to 'user' if role is not set
+          if (userDoc.exists) {
+            String role = userDoc.get('role') ?? 'user';
 
-          // Store the login details in Firestore (login collection)
-          await FirebaseFirestore.instance.collection('login').add({
-            'email': user.email,
-            'uid': user.uid,
-            'role': role,  // Add the role to login collection
-            'login_time': FieldValue.serverTimestamp(),
-          });
+            // Log the user's login activity
+            await FirebaseFirestore.instance.collection('login').add({
+              'email': user.email,
+              'uid': user.uid,
+              'role': role,
+              'login_time': FieldValue.serverTimestamp(),
+            });
 
-          // Navigate to the appropriate dashboard based on role
-          if (role == 'admin') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => AdminDashboard()), // Admin Dashboard
-            );
+            // Navigate based on the user's role
+            if (role == 'admin') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => AdminDashboard()),
+              );
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+              );
+            }
           } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()), // Regular HomePage for users
+            // If user data is missing in Firestore, show an error
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('User role not found. Contact support.')),
             );
           }
         }
-      } catch (e) {
-        // Display error message on login failure
+      } on FirebaseAuthException catch (e) {
+        // Handle Firebase login errors
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${e.toString()}')),
+          SnackBar(content: Text('Login failed: ${e.message}')),
         );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
     }
   }
@@ -65,16 +89,6 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/icons/splash_ilustration.png'), // Replace with your image path
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Login Form Container
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -99,7 +113,6 @@ class LoginPage extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Title
                         Text(
                           'Login',
                           style: TextStyle(
@@ -109,7 +122,6 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20.0),
-                        // Email Field
                         TextFormField(
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -124,7 +136,7 @@ class LoginPage extends StatelessWidget {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email';
                             }
-                            if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+                            if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
                                 .hasMatch(value)) {
                               return 'Please enter a valid email';
                             }
@@ -132,7 +144,6 @@ class LoginPage extends StatelessWidget {
                           },
                         ),
                         SizedBox(height: 16.0),
-                        // Password Field
                         TextFormField(
                           controller: passwordController,
                           obscureText: true,
@@ -154,28 +165,32 @@ class LoginPage extends StatelessWidget {
                           },
                         ),
                         SizedBox(height: 16.0),
-                        // Login Button
-                        ElevatedButton(
-                          onPressed: () => loginUser(context),
-                          child: Text(
-                            'Login',
-                            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        ),
+                        isLoading
+                            ? CircularProgressIndicator()
+                            : ElevatedButton(
+                                onPressed: () => loginUser(context),
+                                child: Text(
+                                  'Login',
+                                  style: TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 14.0, horizontal: 24.0),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              ),
                         SizedBox(height: 20.0),
-                        // Register Navigation Text
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => RegisterPage()),
+                              MaterialPageRoute(
+                                  builder: (context) => RegisterPage()),
                             );
                           },
                           child: Text(
